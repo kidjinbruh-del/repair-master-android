@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.RepairMaster" parent="android:Theme.Material.Light.NoActionBar">
+        <item name="android:statusBarColor">#FF12161F</item>
+        <item name="android:navigationBarColor">#FF12161F</item>
+        <item name="android:windowBackground">#FF0D1017</item>
+    </style>
+</resources>

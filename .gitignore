@@ -1,0 +1,21 @@
+# Сборка и кэш
+.gradle/
+build/
+app/build/
+local.properties
+
+# Kotlin
+.kotlin/
+
+# IDE
+.idea/
+*.iml
+.vscode/
+
+# Python (генератор иллюстраций)
+__pycache__/
+*.pyc
+
+# Бинарные сборки (APK берутся из релизов)
+*.apk
+*.aab
