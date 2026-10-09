@@ -1,5 +1,7 @@
 package com.repairmaster.app
 
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
@@ -20,15 +22,22 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import com.repairmaster.app.data.ContentRepository
+import com.repairmaster.app.data.parts.NetworkProbe
+import com.repairmaster.app.data.parts.PartsRepository
+import com.repairmaster.app.data.parts.PartsSettings
 import com.repairmaster.app.ui.screens.CalculatorScreen
 import com.repairmaster.app.ui.screens.CategoryScreen
 import com.repairmaster.app.ui.screens.HomeScreen
 import com.repairmaster.app.ui.screens.ItemScreen
+import com.repairmaster.app.ui.screens.PartsScreen
+import com.repairmaster.app.ui.screens.PartsSettingsScreen
 import com.repairmaster.app.ui.screens.ProblemScreen
 import com.repairmaster.app.ui.screens.SearchScreen
 import com.repairmaster.app.ui.theme.Amber
@@ -39,6 +48,8 @@ private sealed interface Screen {
     data object Home : Screen
     data object Search : Screen
     data object Calculator : Screen
+    data object Parts : Screen
+    data object PartsSettings : Screen
     data class Category(val id: String) : Screen
     data class Item(val id: String) : Screen
     data class Problem(val id: String) : Screen
@@ -62,13 +73,36 @@ class MainActivity : ComponentActivity() {
 private fun AppRoot(catalog: ContentRepository.Catalog) {
     val stack = remember { mutableStateListOf<Screen>(Screen.Home) }
     val current = stack.last()
+    val context = LocalContext.current
+    val partsRepo = remember { PartsRepository(context) }
+    val partsSettings = remember { PartsSettings(context) }
+    val openUrl: (String) -> Unit = { url ->
+        runCatching {
+            context.startActivity(
+                Intent(Intent.ACTION_VIEW, Uri.parse(url))
+                    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK),
+            )
+        }
+    }
 
     BackHandler(enabled = stack.size > 1) { stack.removeAt(stack.lastIndex) }
+
+    // Скрытая диагностика источников: am start ... --ez probe true
+    LaunchedEffect(Unit) {
+        val act = context as? android.app.Activity ?: return@LaunchedEffect
+        if (act.intent?.getBooleanExtra("probe", false) != true) return@LaunchedEffect
+        NetworkProbe.candidates("1N4007").forEach { probe ->
+            val r = NetworkProbe.run(probe, java.io.File(context.cacheDir, "ym.html"))
+            android.util.Log.i("PartsProbe2", "${probe.name} → ${r.code} ${r.length}B ${r.head}")
+        }
+    }
 
     val title = when (val s = current) {
         Screen.Home -> "Мастер по ремонту"
         Screen.Search -> "Поиск по справочнику"
         Screen.Calculator -> "Калькулятор"
+        Screen.Parts -> "Подбор деталей"
+        Screen.PartsSettings -> "Настройки поиска"
         is Screen.Category ->
             catalog.categories.firstOrNull { it.id == s.id }?.title ?: "Раздел"
         is Screen.Item ->
@@ -132,9 +166,18 @@ private fun AppRoot(catalog: ContentRepository.Catalog) {
                     onProblem = { stack.add(Screen.Problem(it)) },
                     onSearch = { stack.add(Screen.Search) },
                     onCalculator = { stack.add(Screen.Calculator) },
+                    onParts = { stack.add(Screen.Parts) },
                 )
 
                 Screen.Calculator -> CalculatorScreen()
+
+                Screen.Parts -> PartsScreen(
+                    repo = partsRepo,
+                    onOpenUrl = openUrl,
+                    onOpenSettings = { stack.add(Screen.PartsSettings) },
+                )
+
+                Screen.PartsSettings -> PartsSettingsScreen(partsSettings, partsRepo)
 
                 Screen.Search -> SearchScreen(
                     categories = catalog.categories,

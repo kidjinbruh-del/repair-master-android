@@ -1069,6 +1069,67 @@ A["ac_dc"] = doc(
     sub="Почему в розетке 220 В, а на плате 12 В — и почему это важно при замере")
 
 
+# ------------------------------------------- СПРАВОЧНИК КОРПУСОВ ЭЛЕМЕНТОВ
+
+def _pkg_to92(x, y, label):
+    return (rect(x - 26, y - 40, 52, 80, fill="#1B2233", stroke=FRAME, sw=2, rx=14)
+            + circle(x, y + 18, 5, fill="#2A3550", stroke=FRAME)
+            + text(x, y + 56, "TO-92", 12, MUTED, "middle")
+            + text(x, y - 48, label, 14, AMBER, "middle", "700"))
+
+
+def _pkg_to220(x, y, label, f=False):
+    return (rect(x - 36, y - 48, 72, 96, fill="#1B2233", stroke=FRAME, sw=2, rx=10)
+            + rect(x - 26, y + 40, 52, 18, fill="#141A26", stroke=FRAME, rx=4)
+            + "".join(rect(x - 24 + i * 20, y + 58, 10, 14, fill=SILVER, stroke=FRAME, rx=2)
+                      for i in range(3))
+            + text(x, y + 86, "TO-220" + ("F" if f else ""), 12, MUTED, "middle")
+            + text(x, y - 56, label, 14, AMBER, "middle", "700"))
+
+
+def _pkg_do41(x, y, label):
+    return (rect(x - 10, y - 36, 20, 72, fill="#2A3242", stroke=FRAME, rx=6)
+            + rect(x - 11, y - 20, 22, 12, fill="#C9D1DE", stroke=FRAME, rx=2)
+            + line(x, y + 36, x, y + 48, FRAME, 3)
+            + text(x, y + 64, "DO-41", 12, MUTED, "middle")
+            + text(x, y - 44, label, 14, AMBER, "middle", "700"))
+
+
+def _pkg_smd(x, y, label, w=60, unit="мм"):
+    return (rect(x - w / 2, y - 20, w, 40, fill="#E4C88F", stroke=BODY_DK, rx=5)
+            + rect(x - w / 2, y - 6, w, 12, fill="#B9A176", stroke="none", rx=2)
+            + text(x, y + 40, f"{label} {unit}", 12, MUTED, "middle")
+            + text(x, y - 30, "SMD", 12, AMBER, "middle", "700"))
+
+
+A["part_package_ref"] = doc(
+    svg(
+        text(450, 96, "КОРПУСА: ЧТО ГДЕ И ПРИВЫЧНЫЕ РАЗМЕРЫ", 15, AMBER,
+             "middle", "700")
+        + _pkg_to92(120, 220, "КТ315")
+        + _pkg_to92(300, 220, "BC547")
+        + _pkg_to220(490, 220, "7805")
+        + _pkg_to220(660, 220, "TOF1006", f=True)
+        + _pkg_do41(820, 220, "1N4007")
+        + _pkg_smd(130, 380, "0603")
+        + _pkg_smd(280, 380, "0805")
+        + _pkg_smd(430, 380, "1206")
+        + _pkg_smd(580, 380, "SOD-123", 44, unit="")
+        + rect(680, 352, 60, 80, fill="#141A26", stroke=FRAME, rx=6)
+        + "".join(rect(674 + i * 14, 348, 8, 14, fill=SILVER, stroke=FRAME, rx=2)
+                  for i in range(4))
+        + "".join(rect(674 + i * 14, 422, 8, 14, fill=SILVER, stroke=FRAME, rx=2)
+                  for i in range(4))
+        + text(710, 452, "SOIC-8 / DIP-8", 12, MUTED, "middle")
+        + text(710, 336, "ИС", 12, AMBER, "middle", "700")
+        + panel(40, 462, 820, 94, "", [
+            "Размеры SMD 0805 = 2,0 × 1,25 мм; высота резистора 0603 ≈ 0,8 мм.",
+            "Керамика 0805 держит напряжение выше, чем 0603 — важно для цепей питания.",
+        ], color=FRAME)
+    ), title="Справочник корпусов радиодеталей",
+    sub="TO-92, TO-220, TO-220F, DO-41, SMD 0603/0805/1206, SOD-123, SOIC-8")
+
+
 def all_assets():
     return sorted(A.keys())
 

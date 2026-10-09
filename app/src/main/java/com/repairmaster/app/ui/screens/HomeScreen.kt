@@ -26,6 +26,7 @@ import androidx.compose.material.icons.filled.ElectricalServices
 import androidx.compose.material.icons.filled.Science
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.TravelExplore
 import androidx.compose.material.icons.filled.Whatshot
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -37,6 +38,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 import com.repairmaster.app.data.Category
 import com.repairmaster.app.ui.theme.Amber
+import com.repairmaster.app.ui.theme.Cyan
 import com.repairmaster.app.ui.theme.Green
 import com.repairmaster.app.ui.theme.Line
 import com.repairmaster.app.ui.theme.Panel
@@ -63,6 +65,7 @@ fun HomeScreen(
     onProblem: (String) -> Unit,
     onSearch: (String) -> Unit,
     onCalculator: () -> Unit,
+    onParts: () -> Unit,
 ) {
     LazyColumn(
         Modifier
@@ -135,6 +138,37 @@ fun HomeScreen(
                     )
                     Text(
                         "Закон Ома, резистор для светодиода, делитель напряжения",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = TextDim,
+                    )
+                }
+            }
+        }
+
+        item {
+            Row(
+                Modifier
+                    .fillMaxWidth()
+                    .background(Panel, RoundedCornerShape(12.dp))
+                    .clickable { onParts() }
+                    .padding(14.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(10.dp),
+            ) {
+                Icon(
+                    Icons.Filled.TravelExplore,
+                    contentDescription = null,
+                    tint = Cyan,
+                    modifier = Modifier.size(20.dp),
+                )
+                Column(Modifier.weight(1f)) {
+                    Text(
+                        "Подбор деталей: что купить",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurface,
+                    )
+                    Text(
+                        "Введите маркировку — найдём деталь и цены в магазинах",
                         style = MaterialTheme.typography.labelSmall,
                         color = TextDim,
                     )
