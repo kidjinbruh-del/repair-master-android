@@ -185,17 +185,52 @@ T["tv"] = doc(svg(
 ))
 
 T["monitor"] = doc(svg(
-    rect(150, 130, 330, 220, fill="#0B1220", stroke=FRAME, sw=4, rx=10)
-    + "".join(line(180 + i * 40, 150, 180 + i * 40, 340, "#1A2434", 1)
-              for i in range(8))
-    + rect(280, 350, 70, 18, fill="#39424F", stroke=FRAME, rx=5)
-    + panel(520, 130, 340, 200, "Диагностика", [
-        "• фонарик у экрана: есть тусклая картинка —",
-        "  умерла подсветка, плата жива",
-        "• питание LED-драйвера: 30–60 В на разъёме",
-        "• мигание: плохой контакт шлейфа или",
-        "  просевший электролит драйвера",
-    ], color=CYAN)
+    # корпус
+    rect(56, 126, 424, 276, fill="#1B2233", stroke=FRAME, sw=4, rx=16)
+    # матрица
+    + rect(74, 142, 388, 190, fill="#0B1220", stroke=FRAME, rx=8)
+    # изображение на экране
+    + rect(92, 158, 150, 158, fill="#16233A", stroke=FRAME, rx=6)
+    + rect(104, 174, 126, 12, fill="#2A3A55", stroke="none", rx=3)
+    + "".join(rect(104, 198 + i * 26, 126, 14, fill="#1E2C45", stroke="none", rx=3)
+              for i in range(4))
+    + rect(258, 158, 190, 74, fill="#16233A", stroke=FRAME, rx=6)
+    + rect(272, 174, 162, 12, fill=CYAN, stroke="none", rx=3)
+    + "".join(rect(272 + i * 42, 198, 30, 22, fill="#1E2C45", stroke="none", rx=3)
+              for i in range(4))
+    + rect(258, 246, 190, 70, fill="#16233A", stroke=FRAME, rx=6)
+    + rect(272, 262, 90, 8, fill="#1E2C45", stroke="none", rx=3)
+    + rect(272, 278, 130, 8, fill="#1E2C45", stroke="none", rx=3)
+    + rect(272, 294, 70, 8, fill="#1E2C45", stroke="none", rx=3)
+    # разъёмы на нижней рамке
+    + "".join(rect(300 + i * 44, 350, 34, 16, fill="#0B1220", stroke=FRAME, rx=3)
+              for i in range(3))
+    + text(317, 344, "HDMI", 11, MUTED, "middle")
+    + text(361, 344, "VGA", 11, MUTED, "middle")
+    + text(405, 344, "DP", 11, MUTED, "middle")
+    # подпись, индикатор, кнопки
+    + text(92, 386, "MONITOR  24\"", 13, MUTED)
+    + circle(430, 382, 6, fill=GREEN, stroke="none")
+    + "".join(rect(392 + i * 18, 376, 12, 12, fill="#2A3550", stroke=FRAME, rx=3)
+              for i in range(3))
+    # подставка
+    + rect(228, 402, 80, 20, fill="#39424F", stroke=FRAME, rx=6)
+    + rect(168, 422, 200, 16, fill="#39424F", stroke=FRAME, rx=8)
+    # кабель
+    + path("M 317 366 C 317 434, 200 434, 150 478", "#C36A2D", 7)
+    + rect(104, 468, 48, 32, fill="#2A3550", stroke=FRAME, rx=4)
+    + text(330, 524, "кабель и разъёмы проверяем первыми", 13, MUTED, "middle")
+    # правая колонка
+    + bullets(524, 172, [
+        "Фонарик: картинка есть — умерла подсветка",
+        "Нет индикатора: нет 12/24 В после БП",
+        "Полосы и двоение: кабель, разъём, шлейф",
+        "Мерцание: просевший электролит драйвера",
+    ], color=CYAN, step=34, size=12)
+    + rect(520, 340, 340, 108, fill="#151B27", stroke=FRAME, rx=14)
+    + text(538, 370, "Вход 220 В AC", 13, AMBER)
+    + text(538, 396, "После БП 12 / 24 В DC", 13, AMBER)
+    + text(538, 422, "DDC от ПК 5 В DC", 13, AMBER)
 ))
 
 T["pc_psu"] = doc(svg(

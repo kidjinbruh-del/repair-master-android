@@ -11,7 +11,7 @@
           "id": "juicer",
           "title": "Соковыжималки",
           "summary": "Не крутится, не мелет, течёт, горит, шумит, не выдавливает сок.",
-          "images": ["img/motor.webp"],
+          "images": ["img/juicer.webp", "img/motor.webp"],
           "blocks": [
             {
               "heading": "Типы и что ломается",
@@ -286,7 +286,7 @@
           "id": "coffee",
           "title": "Кофеварки и кофемашины",
           "summary": "Не наливает, нет давления, течёт, не мелет, кофе горчит, не греет воду.",
-          "images": ["img/board.webp"],
+          "images": ["img/coffee.webp", "img/board.webp"],
           "blocks": [
             {
               "heading": "Ключевые параметры",

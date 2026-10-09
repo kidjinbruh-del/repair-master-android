@@ -25,6 +25,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import com.repairmaster.app.data.ContentRepository
+import com.repairmaster.app.ui.screens.CalculatorScreen
 import com.repairmaster.app.ui.screens.CategoryScreen
 import com.repairmaster.app.ui.screens.HomeScreen
 import com.repairmaster.app.ui.screens.ItemScreen
@@ -37,6 +38,7 @@ import com.repairmaster.app.ui.theme.RepairMasterTheme
 private sealed interface Screen {
     data object Home : Screen
     data object Search : Screen
+    data object Calculator : Screen
     data class Category(val id: String) : Screen
     data class Item(val id: String) : Screen
     data class Problem(val id: String) : Screen
@@ -66,6 +68,7 @@ private fun AppRoot(catalog: ContentRepository.Catalog) {
     val title = when (val s = current) {
         Screen.Home -> "Мастер по ремонту"
         Screen.Search -> "Поиск по справочнику"
+        Screen.Calculator -> "Калькулятор"
         is Screen.Category ->
             catalog.categories.firstOrNull { it.id == s.id }?.title ?: "Раздел"
         is Screen.Item ->
@@ -128,7 +131,10 @@ private fun AppRoot(catalog: ContentRepository.Catalog) {
                     onCategory = { stack.add(Screen.Category(it)) },
                     onProblem = { stack.add(Screen.Problem(it)) },
                     onSearch = { stack.add(Screen.Search) },
+                    onCalculator = { stack.add(Screen.Calculator) },
                 )
+
+                Screen.Calculator -> CalculatorScreen()
 
                 Screen.Search -> SearchScreen(
                     categories = catalog.categories,

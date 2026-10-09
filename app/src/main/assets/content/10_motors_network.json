@@ -229,7 +229,7 @@
           "id": "routers",
           "title": "Роутеры и точки доступа",
           "summary": "Не раздаёт Wi-Fi, горит WAN, не обновляется, мигает, теряет связь.",
-          "images": ["img/board.webp"],
+          "images": ["img/router.webp", "img/board.webp"],
           "blocks": [
             {
               "heading": "Диагностика по индикации",

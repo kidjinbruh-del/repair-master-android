@@ -17,6 +17,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Build
+import androidx.compose.material.icons.filled.Calculate
 import androidx.compose.material.icons.filled.Cable
 import androidx.compose.material.icons.filled.Checklist
 import androidx.compose.material.icons.filled.ContentCut
@@ -36,6 +37,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 import com.repairmaster.app.data.Category
 import com.repairmaster.app.ui.theme.Amber
+import com.repairmaster.app.ui.theme.Green
 import com.repairmaster.app.ui.theme.Line
 import com.repairmaster.app.ui.theme.Panel
 import com.repairmaster.app.ui.theme.Panel2
@@ -60,6 +62,7 @@ fun HomeScreen(
     onCategory: (String) -> Unit,
     onProblem: (String) -> Unit,
     onSearch: (String) -> Unit,
+    onCalculator: () -> Unit,
 ) {
     LazyColumn(
         Modifier
@@ -76,7 +79,7 @@ fun HomeScreen(
                     color = MaterialTheme.colorScheme.onBackground,
                 )
                 Text(
-                    "Справочник электроника: пайка, измерения, компоненты, провода, диагностика",
+                    "Законы электричества, пайка, измерения, компоненты, провода, диагностика",
                     style = MaterialTheme.typography.bodySmall,
                     color = TextDim,
                 )
@@ -104,6 +107,37 @@ fun HomeScreen(
                             color = TextDim,
                         )
                     }
+                }
+            }
+        }
+
+        item {
+            Row(
+                Modifier
+                    .fillMaxWidth()
+                    .background(Panel, RoundedCornerShape(12.dp))
+                    .clickable { onCalculator() }
+                    .padding(14.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(10.dp),
+            ) {
+                Icon(
+                    Icons.Filled.Calculate,
+                    contentDescription = null,
+                    tint = Green,
+                    modifier = Modifier.size(20.dp),
+                )
+                Column(Modifier.weight(1f)) {
+                    Text(
+                        "Калькулятор: U, I, R",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurface,
+                    )
+                    Text(
+                        "Закон Ома, резистор для светодиода, делитель напряжения",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = TextDim,
+                    )
                 }
             }
         }
