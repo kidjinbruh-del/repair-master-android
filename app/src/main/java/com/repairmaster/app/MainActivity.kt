@@ -23,8 +23,12 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -36,6 +40,7 @@ import com.repairmaster.app.ui.screens.CalculatorScreen
 import com.repairmaster.app.ui.screens.CategoryScreen
 import com.repairmaster.app.ui.screens.HomeScreen
 import com.repairmaster.app.ui.screens.ItemScreen
+import com.repairmaster.app.ui.screens.PartsCatalogScreen
 import com.repairmaster.app.ui.screens.PartsScreen
 import com.repairmaster.app.ui.screens.PartsSettingsScreen
 import com.repairmaster.app.ui.screens.ProblemScreen
@@ -50,6 +55,7 @@ private sealed interface Screen {
     data object Calculator : Screen
     data object Parts : Screen
     data object PartsSettings : Screen
+    data object PartsCatalog : Screen
     data class Category(val id: String) : Screen
     data class Item(val id: String) : Screen
     data class Problem(val id: String) : Screen
@@ -76,6 +82,9 @@ private fun AppRoot(catalog: ContentRepository.Catalog) {
     val context = LocalContext.current
     val partsRepo = remember { PartsRepository(context) }
     val partsSettings = remember { PartsSettings(context) }
+    var partsQuery by remember { mutableStateOf("") }
+    var partsRequestId by remember { mutableIntStateOf(0) }
+    var partsRequest by remember { mutableStateOf<Pair<Int, String>?>(null) }
     val openUrl: (String) -> Unit = { url ->
         runCatching {
             context.startActivity(
@@ -103,6 +112,7 @@ private fun AppRoot(catalog: ContentRepository.Catalog) {
         Screen.Calculator -> "Калькулятор"
         Screen.Parts -> "Подбор деталей"
         Screen.PartsSettings -> "Настройки поиска"
+        Screen.PartsCatalog -> "Каталог базы деталей"
         is Screen.Category ->
             catalog.categories.firstOrNull { it.id == s.id }?.title ?: "Раздел"
         is Screen.Item ->
@@ -173,8 +183,21 @@ private fun AppRoot(catalog: ContentRepository.Catalog) {
 
                 Screen.Parts -> PartsScreen(
                     repo = partsRepo,
+                    initialQuery = partsQuery,
+                    searchRequest = partsRequest,
                     onOpenUrl = openUrl,
                     onOpenSettings = { stack.add(Screen.PartsSettings) },
+                    onOpenCatalog = { stack.add(Screen.PartsCatalog) },
+                )
+
+                Screen.PartsCatalog -> PartsCatalogScreen(
+                    repo = partsRepo,
+                    onPick = { entry ->
+                        val smart = partsRepo.match(entry.searchQuery.ifBlank { entry.marking }).second
+                        stack.removeAt(stack.lastIndex)   // закрываем каталог
+                        partsQuery = smart
+                        partsRequest = (++partsRequestId) to smart
+                    },
                 )
 
                 Screen.PartsSettings -> PartsSettingsScreen(partsSettings, partsRepo)

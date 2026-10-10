@@ -57,4 +57,9 @@ dependencies {
     implementation("androidx.compose.foundation:foundation")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.9.0")
     debugImplementation("androidx.compose.ui:ui-tooling")
+
+    // Разбор запроса и парсеры ответов — чистый Kotlin и org.json,
+    // проверяются обычными юнит-тестами на кусках живых страниц.
+    testImplementation("junit:junit:4.13.2")
+    testImplementation("org.json:json:20231013")
 }

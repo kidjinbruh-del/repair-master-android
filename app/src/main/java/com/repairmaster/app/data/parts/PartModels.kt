@@ -40,6 +40,14 @@ data class PartsResult(
     val statuses: List<SourceStatus>,
     val links: List<ShopLink>,
     val ms: Long,
+    /** Что понял парсер: модель устройства, деталь, маркировка. */
+    val model: String? = null,
+    val partTerm: String? = null,
+    val marking: String? = null,
+    /** Альтернативные запросы — показываем чипами, мастер может переключить. */
+    val suggestions: List<QueryVariant> = emptyList(),
+    /** Запросы, которые реально ушли в магазины. */
+    val queriesUsed: List<String> = emptyList(),
 )
 
 /** Совпадение по встроенной базе деталей: что это и какие параметры. */
@@ -54,6 +62,7 @@ data class PartMatch(
     val note: String,
     val searchQuery: String,
     val image: String?,
+    val models: List<String> = emptyList(),
 )
 
 /** Источник живого поиска. */

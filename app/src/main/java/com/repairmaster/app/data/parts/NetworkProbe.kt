@@ -48,12 +48,19 @@ object NetworkProbe {
 
     fun candidates(query: String): List<Probe> {
         val q = Http.enc(query)
-        val wbQuery = "appType=1&curr=rub&dest=-1257786&query=$q" +
-            "&resultset=catalog&limit=10&sort=popular&spp=30"
         return listOf(
             Probe(
+                "Яндекс Маркет",
+                "https://market.yandex.ru/search/?text=$q",
+            ),
+            Probe(
+                "ChipDip",
+                "https://www.chipdip.ru/search?searchtext=$q",
+            ),
+            Probe(
                 "WB composer",
-                "https://search.wb.ru/exactmatch/ru/common/v13/search?$wbQuery",
+                "https://search.wb.ru/exactmatch/ru/common/v7/search" +
+                    "?appType=1&curr=rub&dest=-1257786&query=$q&resultset=catalog&limit=10",
                 wbHeaders,
             ),
             Probe(
@@ -63,13 +70,13 @@ object NetworkProbe {
                 ozonHeaders,
             ),
             Probe("Ozon страница", "https://www.ozon.ru/search/?text=$q"),
-            Probe("Citilink поиск", "https://www.citilink.ru/search/?q=$q"),
+            Probe("Citilink поиск", "https://www.citilink.ru/search/?text=$q"),
             Probe("E-katalog поиск", "https://www.e-katalog.ru/search/?q=$q"),
             Probe("Pleer поиск", "https://www.pleer.ru/search/?what=$q"),
             Probe("AliExpress поиск", "https://www.aliexpress.ru/wholesale?SearchText=$q"),
-            Probe("Avito поиск", "https://www.avito.ru/search/?q=$q"),
+            Probe("Avito поиск", "https://www.avito.ru/search?q=$q"),
             Probe("DNS страница", "https://www.dns-shop.ru/search/?q=$q"),
-            Probe("Яндекс Маркет", "https://market.yandex.ru/search/?text=$q", dumpTo = "/sdcard/ym.html"),
+            Probe("СберМегаМаркет", "https://megamarket.ru/catalog/?q=$q"),
             Probe(
                 "DNS api",
                 "https://www.dns-shop.ru/search/api/v1/search?query=$q&city=%D0%9C%D0%BE%D1%81%D0%BA%D0%B2%D0%B0",

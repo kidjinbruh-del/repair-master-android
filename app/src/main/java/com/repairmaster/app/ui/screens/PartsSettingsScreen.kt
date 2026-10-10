@@ -68,8 +68,9 @@ fun PartsSettingsScreen(settings: PartsSettings, repo: PartsRepository) {
 
         SwitchRow(
             title = "Живой поиск в магазинах",
-            subtitle = "Неофициальные запросы к Wildberries и Ozon. Могут блокироваться " +
-                "площадками и ломаться после их обновлений. Выключите, если не нужны.",
+            subtitle = "Запросы к площадкам: Яндекс Маркет, ChipDip, Wildberries, Ozon, " +
+                "Avito. Площадки могут блокировать запросы из приложений и менять свои " +
+                "эндпоинты. Выключите, если нужен только справочник и ссылки.",
             value = unofficial,
             onChange = {
                 unofficial = it
@@ -153,9 +154,15 @@ fun PartsSettingsScreen(settings: PartsSettings, repo: PartsRepository) {
             Spacer(Modifier.height(6.dp))
             listOf(
                 "Встроенная база деталей работает всегда: маркировка → параметры, корпус, аналоги.",
-                "Живой поиск идёт параллельно в Wildberries и Ozon, запрос уточняется по базе.",
-                "Если площадка заблокировала запрос — показываем честный статус и ссылку на поиск.",
-                "Картинки грузятся превью-размера и только для видимых строк; полный размер — по тапу.",
+                "Запрос разбирается: «Philips HR1858 ремень» → модель + деталь, из этого " +
+                    "строится несколько вариантов поиска.",
+                "Живой поиск идёт параллельно в Яндекс Маркет, ChipDip, Wildberries и Ozon.",
+                "Запрос уточняется по базе, при полном молчании площадок пробуется " +
+                    "следующий вариант запроса.",
+                "Если площадка заблокировала запрос — показываем честный статус и ссылку " +
+                    "на поиск в браузере.",
+                "Картинки грузятся превью-размера и только для видимых строк; полный " +
+                    "размер — по тапу.",
                 "Весь остальной справочник по-прежнему работает без интернета.",
             ).forEach {
                 Text(
@@ -200,6 +207,7 @@ fun PartsSettingsScreen(settings: PartsSettings, repo: PartsRepository) {
                         if (probing) return@clickable
                         probing = true
                         probeResults = emptyList()
+                        settings.resetHealth()
                         probeScope.launch {
                             val list = NetworkProbe.candidates("1N4007")
                             val out = ArrayList<ProbeResult>(list.size)

@@ -8,6 +8,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -46,6 +47,7 @@ import androidx.compose.ui.unit.dp
 import com.repairmaster.app.data.parts.PartOffer
 import com.repairmaster.app.data.parts.PartsRepository
 import com.repairmaster.app.data.parts.PartsResult
+import com.repairmaster.app.data.parts.QueryVariant
 import com.repairmaster.app.data.parts.SourceStatus
 import com.repairmaster.app.ui.components.AssetImage
 import com.repairmaster.app.ui.components.DataTable
@@ -65,23 +67,30 @@ private val EXAMPLES = listOf(
     "TOF1006", "1N4007", "KT315", "BC547", "7805",
     "конденсатор 470 мкФ 25В", "NTC 10k", "варистор 14D471K",
     "резистор 0805 10k", "светодиод 5мм 3В", "подшипник 6205",
+    "Philips HR1858 ремень", "Jura E8 уплотнитель",
+    "Keenetic Giga блок питания", "Bosch MUC2 венчик",
+    "iPhone 12 дисплей", "Samsung Galaxy A50 аккумулятор",
+    "De'Longhi Dedica фильтр", "Electrolux помпа",
 )
 
 /**
- * Подбор деталей: сначала умный запрос по встроенной базе, затем живой поиск
- * в источниках и быстрые ссылки на площадки. Сеть используется только здесь.
+ * Подбор деталей: разбор запроса (модель + деталь + маркировка) → встроенная база
+ * → живой поиск в источниках → ссылки на площадки. Сеть используется только здесь.
  */
 @Composable
 fun PartsScreen(
     repo: PartsRepository,
+    initialQuery: String,
+    searchRequest: Pair<Int, String>?,
     onOpenUrl: (String) -> Unit,
     onOpenSettings: () -> Unit,
+    onOpenCatalog: () -> Unit,
 ) {
     val ctx = LocalContext.current
     val scope = rememberCoroutineScope()
     val keyboard = LocalSoftwareKeyboardController.current
 
-    var query by remember { mutableStateOf("") }
+    var query by remember { mutableStateOf(initialQuery) }
     var result by remember { mutableStateOf<PartsResult?>(null) }
     var loading by remember { mutableStateOf(false) }
 
@@ -89,16 +98,22 @@ fun PartsScreen(
     val wifiOnly = repo.imageMode() == 0
     val onWifi = remember(ctx, repo.imageMode()) { isOnWifi(ctx) }
 
-    fun run(q: String) {
+    suspend fun run(q: String) {
         val text = q.trim()
         if (text.isEmpty()) return
         loading = true
         keyboard?.hide()
-        scope.launch {
-            val r = repo.search(text)
-            result = r
-            loading = false
-        }
+        val r = repo.search(text)
+        result = r
+        loading = false
+    }
+
+    // Запрос из каталога базы или с чипа быстрого набора — выполняем автоматически.
+    LaunchedEffect(searchRequest) {
+        val req = searchRequest ?: return@LaunchedEffect
+        if (req.second.isBlank()) return@LaunchedEffect
+        query = req.second
+        run(req.second)
     }
 
     Column(
@@ -108,7 +123,7 @@ fun PartsScreen(
     ) {
         LazyColumn(
             Modifier.fillMaxSize(),
-            contentPadding = androidx.compose.foundation.layout.PaddingValues(16.dp),
+            contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             item {
@@ -124,7 +139,7 @@ fun PartsScreen(
                             color = MaterialTheme.colorScheme.onBackground,
                         )
                         Text(
-                            "Введите маркировку или название детали",
+                            "Маркировка, название детали или модель устройства",
                             style = MaterialTheme.typography.bodySmall,
                             color = TextDim,
                         )
@@ -150,13 +165,15 @@ fun PartsScreen(
                 OutlinedTextField(
                     value = query,
                     onValueChange = { query = it },
-                    label = { Text("Деталь: TOF1006, 1N4007, конденсатор 470 мкФ…") },
+                    label = {
+                        Text("Деталь, модель или маркировка: Philips HR1858 ремень, 1N4007…")
+                    },
                     singleLine = true,
                     leadingIcon = {
                         Icon(Icons.Filled.Search, contentDescription = null, tint = Amber)
                     },
                     keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
-                    keyboardActions = KeyboardActions(onSearch = { run(query) }),
+                    keyboardActions = KeyboardActions(onSearch = { scope.launch { run(query) } }),
                     colors = fieldColors(),
                     modifier = Modifier.fillMaxWidth(),
                 )
@@ -171,7 +188,7 @@ fun PartsScreen(
                     Box(
                         Modifier
                             .background(Amber, RoundedCornerShape(10.dp))
-                            .clickable { run(query) }
+                            .clickable { scope.launch { run(query) } }
                             .padding(horizontal = 22.dp, vertical = 12.dp),
                     ) {
                         Text(
@@ -212,7 +229,7 @@ fun PartsScreen(
                                             .background(Panel2, RoundedCornerShape(8.dp))
                                             .clickable {
                                                 query = ex
-                                                run(ex)
+                                                scope.launch { run(ex) }
                                             }
                                             .padding(horizontal = 10.dp, vertical = 7.dp),
                                     ) {
@@ -230,8 +247,32 @@ fun PartsScreen(
                 }
             }
 
+            item {
+                Row(
+                    Modifier
+                        .fillMaxWidth()
+                        .background(Panel, RoundedCornerShape(10.dp))
+                        .clickable { onOpenCatalog() }
+                        .padding(horizontal = 14.dp, vertical = 12.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                ) {
+                    Text(
+                        "Каталог базы: ${repo.allEntries().size} деталей",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurface,
+                    )
+                    Text(
+                        "открыть ▶",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = Amber,
+                    )
+                }
+            }
+
             val r = result
             if (r != null) {
+                item { ParsedPanel(r, onPickVariant = { text -> scope.launch { run(text) } }) }
                 item { StatusRow(r.statuses, r.ms) }
 
                 val match = r.dbMatch
@@ -263,6 +304,14 @@ fun PartsScreen(
                                 listOf("Параметр", "Значение"),
                                 match.params,
                             )
+                            if (match.models.isNotEmpty()) {
+                                Spacer(Modifier.height(4.dp))
+                                Text(
+                                    "Совместимость: ${match.models.joinToString(", ")}",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = TextDim,
+                                )
+                            }
                             if (match.equivalents.isNotEmpty()) {
                                 Text(
                                     "Аналоги: ${match.equivalents.joinToString(", ")}",
@@ -294,7 +343,7 @@ fun PartsScreen(
                         )
                         if (r.smartQuery != r.query) {
                             Text(
-                                "запрос уточнён базой: «${r.smartQuery}»",
+                                "запрос уточнён: «${r.smartQuery}»",
                                 style = MaterialTheme.typography.labelSmall,
                                 color = TextDim,
                             )
@@ -320,7 +369,7 @@ fun PartsScreen(
                         }
                     }
                 } else {
-                    items(r.offers, key = { it.sourceId + it.url }) { offer ->
+                    items(r.offers, key = { it.sourceId + "|" + it.url }) { offer ->
                         OfferRow(
                             offer = offer,
                             imagesOn = imagesOn && (!wifiOnly || onWifi),
@@ -364,6 +413,61 @@ fun PartsScreen(
                                     )
                                 }
                             }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+/** Что парсер понял из запроса — и альтернативные варианты запроса. */
+@Composable
+private fun ParsedPanel(r: PartsResult, onPickVariant: (String) -> Unit) {
+    val hasAny = listOf(r.model, r.partTerm, r.marking).any { !it.isNullOrBlank() }
+    if (!hasAny && r.suggestions.isEmpty()) return
+    Column(
+        Modifier
+            .fillMaxWidth()
+            .background(Panel2, RoundedCornerShape(12.dp))
+            .padding(14.dp),
+        verticalArrangement = Arrangement.spacedBy(6.dp),
+    ) {
+        Text(
+            "ПАРСЕР ЗАПРОСА",
+            style = MaterialTheme.typography.labelSmall,
+            color = Cyan,
+        )
+        r.model?.let {
+            Text("Устройство: $it", style = MaterialTheme.typography.bodySmall, color = Amber)
+        }
+        r.partTerm?.let {
+            Text("Деталь: $it", style = MaterialTheme.typography.bodySmall, color = Amber)
+        }
+        r.marking?.let {
+            Text("Маркировка: $it", style = MaterialTheme.typography.bodySmall, color = Amber)
+        }
+        if (r.suggestions.isNotEmpty()) {
+            Spacer(Modifier.height(2.dp))
+            Text(
+                "ПОИСКАТЬ ИНАЧЕ",
+                style = MaterialTheme.typography.labelSmall,
+                color = TextDim,
+            )
+            r.suggestions.chunked(2).forEach { pair ->
+                Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                    pair.forEach { v ->
+                        Box(
+                            Modifier
+                                .background(Panel, RoundedCornerShape(8.dp))
+                                .clickable { onPickVariant(v.text) }
+                                .padding(horizontal = 10.dp, vertical = 7.dp),
+                        ) {
+                            Text(
+                                v.text,
+                                style = MaterialTheme.typography.labelSmall,
+                                color = TextDim,
+                            )
                         }
                     }
                 }
@@ -438,6 +542,7 @@ private fun shopTitle(sourceId: String) = when {
     sourceId.startsWith("wb") -> "Wildberries"
     sourceId.startsWith("ozon") -> "Ozon"
     sourceId.startsWith("avito") -> "Avito"
+    sourceId.startsWith("chipdip") -> "ChipDip"
     sourceId.startsWith("ym") -> "Яндекс Маркет"
     else -> sourceId
 }
